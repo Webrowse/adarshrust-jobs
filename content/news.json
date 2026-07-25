@@ -682,5 +682,248 @@
     "kind": "Blog",
     "source": "twir",
     "title": "Oxidize XIAO — An Embedded Rust Community Program"
+  },
+  {
+    "blurb": "",
+    "checkedAt": "2026-07-25",
+    "date": "2026-07-25",
+    "href": "https://blog.rust-lang.org/2026/07/16/Rust-1.97.1/",
+    "kind": "Blog",
+    "source": "twir",
+    "title": "Announcing Rust 1.97.1"
+  },
+  {
+    "blurb": "",
+    "checkedAt": "2026-07-25",
+    "date": "2026-07-25",
+    "href": "https://www.theembeddedrustacean.com/p/the-embedded-rustacean-issue-76",
+    "kind": "Blog",
+    "source": "twir",
+    "title": "The Embedded Rustacean Issue #76"
+  },
+  {
+    "blurb": "",
+    "checkedAt": "2026-07-25",
+    "date": "2026-07-25",
+    "href": "https://tokio.rs/blog/2026-07-22-announcing-topcoat",
+    "kind": "Blog",
+    "source": "twir",
+    "title": "Announcing Topcoat: a framework for building full-stack reactive web apps with Rust"
+  },
+  {
+    "blurb": "",
+    "checkedAt": "2026-07-25",
+    "date": "2026-07-25",
+    "href": "https://blog.jetbrains.com/rust/2026/07/22/whats-new-in-rustrover-2026-2/",
+    "kind": "Blog",
+    "source": "twir",
+    "title": "What’s New in RustRover 2026.2"
+  },
+  {
+    "blurb": "",
+    "checkedAt": "2026-07-25",
+    "date": "2026-07-25",
+    "href": "https://github.com/kunobi-ninja/kobe/releases/tag/v0.35.0",
+    "kind": "Blog",
+    "source": "twir",
+    "title": "kobe 0.35.0: readiness gates and cert recycling"
+  },
+  {
+    "blurb": "",
+    "checkedAt": "2026-07-25",
+    "date": "2026-07-25",
+    "href": "https://github.com/Eoin-McMahon/comhad/releases/tag/v0.1.0",
+    "kind": "Blog",
+    "source": "twir",
+    "title": "Comhad v0.1.0: a ranger-style tui cyberduck replacement for browsing S3"
+  },
+  {
+    "blurb": "",
+    "checkedAt": "2026-07-25",
+    "date": "2026-07-25",
+    "href": "https://github.com/bigduu/Nova/releases/tag/v0.2.1",
+    "kind": "Blog",
+    "source": "twir",
+    "title": "Nova v0.2.1: computer-use MCP server"
+  },
+  {
+    "blurb": "",
+    "checkedAt": "2026-07-25",
+    "date": "2026-07-25",
+    "href": "https://github.com/rust-windowing/winit/pull/4571",
+    "kind": "Blog",
+    "source": "twir",
+    "title": "winit now has comprehensive cross-platform drag-and-drop support, exposing most of the power of the underlying OS APIs"
+  },
+  {
+    "blurb": "",
+    "checkedAt": "2026-07-25",
+    "date": "2026-07-25",
+    "href": "https://github.com/singhpratech/crimson-crab/releases/tag/v0.1.0",
+    "kind": "Blog",
+    "source": "twir",
+    "title": "crimson-crab v0.1.0 - a production-grade Rust SDK for the Claude API (streaming, tool use, prompt caching, batches)"
+  },
+  {
+    "blurb": "",
+    "checkedAt": "2026-07-25",
+    "date": "2026-07-25",
+    "href": "https://singhpratech.github.io/ferrovec/",
+    "kind": "Blog",
+    "source": "twir",
+    "title": "ferrovec: dependency-light HNSW vector search in Rust, compiled to WebAssembly for private in-browser semantic search"
+  },
+  {
+    "blurb": "",
+    "checkedAt": "2026-07-25",
+    "date": "2026-07-25",
+    "href": "https://github.com/ordokr/ordofp/releases/tag/v0.1.0",
+    "kind": "Blog",
+    "source": "twir",
+    "title": "OrdoFP 0.1.0 released — a functional-programming toolbelt for Rust (HList, GAT type classes, optics, effects, monad transformers)"
+  },
+  {
+    "blurb": "",
+    "checkedAt": "2026-07-25",
+    "date": "2026-07-25",
+    "href": "https://dev.to/nabsei/buildline-merging-cargo-and-ninjas-build-profiling-into-one-timeline-2373",
+    "kind": "Blog",
+    "source": "twir",
+    "title": "buildline: merging cargo and ninja's build profiling into one timeline"
+  },
+  {
+    "blurb": "",
+    "checkedAt": "2026-07-25",
+    "date": "2026-07-25",
+    "href": "https://richer-richard.github.io/cochlea/determinism.html#030-additions-2026-07-22",
+    "kind": "Blog",
+    "source": "twir",
+    "title": "cochlea 0.3.0: melody read-back, MFCC timbre, a master limiter, and MIDI import for the deterministic agent-audio engine"
+  },
+  {
+    "blurb": "",
+    "checkedAt": "2026-07-25",
+    "date": "2026-07-25",
+    "href": "https://flodl.dev/blog/then-the-cpu-died",
+    "kind": "Blog",
+    "source": "twir",
+    "title": "flodl 0.6.0: multi-host heterogeneous DDP - mismatched GPUs across hosts beat the fastest card alone"
+  },
+  {
+    "blurb": "",
+    "checkedAt": "2026-07-25",
+    "date": "2026-07-25",
+    "href": "https://hongnoul.github.io/hwatu/",
+    "kind": "Blog",
+    "source": "twir",
+    "title": "hwatu: a daemon-based WebKitGTK browser for tiling WMs with ~13ms window spawn"
+  },
+  {
+    "blurb": "",
+    "checkedAt": "2026-07-25",
+    "date": "2026-07-25",
+    "href": "https://github.com/kunobi-ninja/kache/releases/tag/v0.11.0",
+    "kind": "Blog",
+    "source": "twir",
+    "title": "kache 0.11.0: broader compiler coverage and libc-aware keys"
+  },
+  {
+    "blurb": "",
+    "checkedAt": "2026-07-25",
+    "date": "2026-07-25",
+    "href": "https://mladedav.github.io/blog/blog/tracing-reload/",
+    "kind": "Blog",
+    "source": "twir",
+    "title": "tracing-reload - reload layer without panics"
+  },
+  {
+    "blurb": "",
+    "checkedAt": "2026-07-25",
+    "date": "2026-07-25",
+    "href": "https://www.opentypeless.com/en/blog/introducing-talkmore",
+    "kind": "Blog",
+    "source": "twir",
+    "title": "Introducing OpenTypeless: Voice Input That Actually Works"
+  },
+  {
+    "blurb": "",
+    "checkedAt": "2026-07-25",
+    "date": "2026-07-25",
+    "href": "https://dev.to/booyaka101/reading-a-rust-crates-capabilities-out-of-its-compiled-symbols-58pb",
+    "kind": "Blog",
+    "source": "twir",
+    "title": "Reading a Rust crate's capabilities out of its compiled symbols"
+  },
+  {
+    "blurb": "",
+    "checkedAt": "2026-07-25",
+    "date": "2026-07-25",
+    "href": "https://smallcultfollowing.com/babysteps/blog/2026/07/15/battery-packs/",
+    "kind": "Blog",
+    "source": "twir",
+    "title": "Battery packs: Let's talk about crates, baby"
+  },
+  {
+    "blurb": "",
+    "checkedAt": "2026-07-25",
+    "date": "2026-07-25",
+    "href": "https://blog.yoshuawuyts.com/capture-clauses-as-effects",
+    "kind": "Blog",
+    "source": "twir",
+    "title": "Capture Clauses as Effects"
+  },
+  {
+    "blurb": "",
+    "checkedAt": "2026-07-25",
+    "date": "2026-07-25",
+    "href": "https://corrode.dev/blog/hardening-rust/",
+    "kind": "Blog",
+    "source": "twir",
+    "title": "Hardening Rust Code For Production"
+  },
+  {
+    "blurb": "",
+    "checkedAt": "2026-07-25",
+    "date": "2026-07-25",
+    "href": "https://pranitha.dev/posts/tokio-gives-progress-not-ordering/",
+    "kind": "Blog",
+    "source": "twir",
+    "title": "Tokio Gives Progress, Not Ordering: Scheduling 1M Tasks"
+  },
+  {
+    "blurb": "",
+    "checkedAt": "2026-07-25",
+    "date": "2026-07-25",
+    "href": "https://kerkour.com/rust-service-hardening-and-production-checklist",
+    "kind": "Blog",
+    "source": "twir",
+    "title": "Rust service hardening and production checklist"
+  },
+  {
+    "blurb": "",
+    "checkedAt": "2026-07-25",
+    "date": "2026-07-25",
+    "href": "https://corrode.dev/podcast/s06e08-rust-foundation/",
+    "kind": "Blog",
+    "source": "twir",
+    "title": "The Rust Foundation with Rebecca Rumbul, Lori Lorusso, and David Wood, Rust Foundation leadership and board"
+  },
+  {
+    "blurb": "",
+    "checkedAt": "2026-07-25",
+    "date": "2026-07-25",
+    "href": "https://www.youtube.com/live/Doqwh1b4QyA",
+    "kind": "Blog",
+    "source": "twir",
+    "title": "Livestream: Rust in Ubuntu"
+  },
+  {
+    "blurb": "",
+    "checkedAt": "2026-07-25",
+    "date": "2026-07-25",
+    "href": "https://dev.to/scripthpp/two-bugs-i-only-found-by-running-my-rust-sync-daemon-against-real-infrastructure-4278",
+    "kind": "Blog",
+    "source": "twir",
+    "title": "Two tricky bugs in a Rust daemon"
   }
 ]

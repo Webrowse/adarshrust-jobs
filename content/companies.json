@@ -846,5 +846,19 @@
     "name": "Alacritty",
     "sector": "Terminal Emulator",
     "slug": "alacritty"
+  },
+  {
+    "checkedAt": "2026-07-25",
+    "href": "https://github.com/unionlabs",
+    "name": "Union",
+    "sector": "Open Source",
+    "slug": "union"
+  },
+  {
+    "checkedAt": "2026-07-25",
+    "href": "https://github.com/openinterpreter",
+    "name": "Open Interpreter",
+    "sector": "Open Source",
+    "slug": "open-interpreter"
   }
 ]

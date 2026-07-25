@@ -124,5 +124,12 @@
     "href": "https://github.com/shadowmkj/leetrs",
     "kind": "Community",
     "title": "leetrs"
+  },
+  {
+    "checkedAt": "2026-07-25",
+    "description": "Xfetch kernel",
+    "href": "https://xfetch-cli.github.io/web/",
+    "kind": "Community",
+    "title": "xfetch"
   }
 ]

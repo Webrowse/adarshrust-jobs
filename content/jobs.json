@@ -553,5 +553,51 @@
       "consulting",
       "training"
     ]
+  },
+  {
+    "checkedAt": "2026-07-25",
+    "expiresAt": "2026-10-25",
+    "note": "ProxyBase (<a href=\"https://proxybase.xyz\" rel=\"nofollow\">https://proxybase.xyz</a>) | Rust Backend Engineers & Full-Stack Developers | Remote (Global) | Full-Time | $100k-$160k + Equity\nHey HN, we’re",
+    "remoteConfirmed": true,
+    "rustMentioned": true,
+    "slug": "job",
+    "tags": [
+      "Remote",
+      "US"
+    ],
+    "topics": [
+      "embedded",
+      "backend",
+      "infra"
+    ]
+  },
+  {
+    "checkedAt": "2026-07-25",
+    "expiresAt": "2026-10-25",
+    "note": "ArtCraft | Backend Engineer (Rust, MySQL) | Remote (Global) / Onsite (SF Bay Area and Atlanta, Georgia) | <a href=\"https://github.com/storytold/artcraft\" rel=\"nofollow\">https://github.com/storytold/ar",
+    "remoteConfirmed": true,
+    "rustMentioned": true,
+    "slug": "job",
+    "tags": [
+      "Remote"
+    ],
+    "topics": [
+      "backend"
+    ]
+  },
+  {
+    "checkedAt": "2026-07-25",
+    "expiresAt": "2026-10-25",
+    "note": "FUTO | <a href=\"https://futo.tech\" rel=\"nofollow\">https://futo.tech</a> | Austin, TX | REMOTE(Worldwide) or ONSITE | Full Time\nFUTO is an organization dedicated to developing, both through internal en",
+    "remoteConfirmed": true,
+    "rustMentioned": true,
+    "slug": "job",
+    "tags": [
+      "Remote",
+      "US"
+    ],
+    "topics": [
+      "blockchain"
+    ]
   }
 ]
