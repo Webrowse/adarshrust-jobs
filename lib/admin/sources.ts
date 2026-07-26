@@ -20,6 +20,9 @@ export type SourceKind =
   | "rust-bytes"
   | "careers"
   | "reddit"
+  | "remoteok"
+  | "weworkremotely"
+  | "rustler-in"
 
 export type SourceRow = {
   id: string

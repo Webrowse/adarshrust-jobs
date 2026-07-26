@@ -31,6 +31,8 @@ async function firstFeedLink(url: string): Promise<string | null> {
 export const SOURCE_PROBES: Partial<Record<SourceKind, () => Promise<string | null>>> = {
   "twir": () => firstFeedLink("https://this-week-in-rust.org/rss.xml"),
 
+  "weworkremotely": () => firstFeedLink("https://weworkremotely.com/categories/remote-programming-jobs.rss"),
+
   "rust-bytes": () => firstFeedLink("https://weeklyrust.substack.com/feed"),
 
   "reddit": async () => {

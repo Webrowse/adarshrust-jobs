@@ -59,7 +59,7 @@ export async function collectHN(ctx: ScanContext): Promise<ScanResult> {
     log.found = hits.length
     log.stages!.fetched = hits.length
 
-    let rustFiltered = 0, scoreFiltered = 0, dupFiltered = 0
+    let rustFiltered = 0, scoreFiltered = 0, dupFiltered = 0, extractionFailed = 0
 
     for (const hit of hits) {
       const text = decodeHTML(hit.comment_text ?? "")
@@ -85,8 +85,16 @@ export async function collectHN(ctx: ScanContext): Promise<ScanResult> {
         extracted = extractMinimalJob(text)
       }
 
-      const extractedHref = String(extracted.href ?? "")
-      if (extractedHref && ctx.isKnown(extractedHref)) { dupFiltered++; continue }
+      // A published job needs company + role + href to render as a real
+      // listing. extractMinimalJob() (the no-AI / failed-extraction fallback)
+      // deliberately can't produce those from free-form prose — publishing it
+      // anyway would put a blank job card on the live site. Skip instead.
+      const company = String(extracted.company ?? "").trim()
+      const role = String(extracted.role ?? "").trim()
+      const extractedHref = String(extracted.href ?? "").trim()
+      if (!company || !role || !extractedHref) { extractionFailed++; continue }
+
+      if (ctx.isKnown(extractedHref)) { dupFiltered++; continue }
 
       items.push({
         id: `hn-${hit.objectID}`,
@@ -101,9 +109,14 @@ export async function collectHN(ctx: ScanContext): Promise<ScanResult> {
     log.stages!.rustFiltered = rustFiltered
     log.stages!.scoreFiltered = scoreFiltered
     log.stages!.dupFiltered = dupFiltered
+    log.stages!.extractionFailed = extractionFailed
     log.stages!.queued = items.length
+    log.skipped = rustFiltered + scoreFiltered + dupFiltered + extractionFailed
     if (items.length === 0 && hits.length > 0) {
       log.notes!.push(`No comments passed score threshold (${QUEUE_THRESHOLD}).`)
+    }
+    if (extractionFailed > 0 && !useAI) {
+      log.notes!.push(`${extractionFailed} comment(s) scored as Rust jobs but skipped: no DEEPSEEK_API_KEY configured, so company/role/href couldn't be extracted from free-form text.`)
     }
   } catch (e) {
     log.errors.push(`Scan failed: ${String(e)}`)

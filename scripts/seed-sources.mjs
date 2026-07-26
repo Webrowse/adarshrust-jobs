@@ -36,6 +36,9 @@ const SEED = [
   ["Rust Bytes",             "rust-bytes",   "oss",       "https://rust.libhunt.com/newsletter",         168],
   ["Company Careers",        "careers",      "jobs",      null,                                           24],
   ["r/rust",                 "reddit",       "news",      "https://www.reddit.com/r/rust",                24],
+  ["RemoteOK",               "remoteok",     "jobs",      "https://remoteok.com/api",                     24],
+  ["We Work Remotely",       "weworkremotely","jobs",     "https://weworkremotely.com/categories/remote-programming-jobs.rss", 24],
+  ["rustler.in",             "rustler-in",   "jobs",      "https://rustler.in/sitemap.xml",               24],
 ]
 
 let created = 0

@@ -11,6 +11,9 @@ import { collectPortals } from "./scan/portals"
 import { collectRustBytes } from "./scan/rust-bytes"
 import { collectCareers } from "./scan/careers"
 import { collectReddit } from "./scan/reddit"
+import { collectRemoteOK } from "./scan/remoteok"
+import { collectWeWorkRemotely } from "./scan/weworkremotely"
+import { collectRustlerIn } from "./scan/rustler"
 
 /** Maps each managed source kind to its pure scanner core. */
 export const KIND_TO_COLLECTOR: Record<SourceKind, Collector> = {
@@ -24,6 +27,9 @@ export const KIND_TO_COLLECTOR: Record<SourceKind, Collector> = {
   "rust-bytes": collectRustBytes,
   "careers": collectCareers,
   "reddit": collectReddit,
+  "remoteok": collectRemoteOK,
+  "weworkremotely": collectWeWorkRemotely,
+  "rustler-in": collectRustlerIn,
 }
 
 export type ScanJob = { source: SourceRow; collect: Collector }
