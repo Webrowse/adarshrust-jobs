@@ -244,13 +244,31 @@ for (const name of qualifiedCrates) {
 }
 
 // ── Write ─────────────────────────────────────────────────────────────────────
+// Drop malformed entries. A single record with a missing title/sub (e.g. a job
+// whose extraction failed and produced no role/company) used to ship into the
+// index and throw on every keystroke in the palette, breaking search sitewide.
+const valid = entries.filter(
+  e => typeof e.title === "string" && e.title.trim() !== "" && typeof e.href === "string" && e.href.trim() !== ""
+)
+for (const e of valid) if (typeof e.sub !== "string") e.sub = ""
+
+const dropped = entries.length - valid.length
+if (dropped > 0) {
+  const byType = {}
+  for (const e of entries) {
+    if (valid.includes(e)) continue
+    byType[e.type] = (byType[e.type] ?? 0) + 1
+  }
+  console.warn(`⚠ dropped ${dropped} malformed entries: ${JSON.stringify(byType)}`)
+}
+
 const out     = join(ROOT, "public/search-index.json")
-const payload = JSON.stringify(entries)
+const payload = JSON.stringify(valid)
 writeFileSync(out, payload)
 
 const repoCount    = sortedOSS.length
 const ecoTagged    = sortedOSS.filter(r => getEcoTags(r.dependencies, r.owner, r.name, r.topics).length > 0).length
 const kb           = (Buffer.byteLength(payload) / 1024).toFixed(1)
-console.log(`✓ search-index.json — ${entries.length} entries, ${kb} KB raw`)
+console.log(`✓ search-index.json — ${valid.length} entries, ${kb} KB raw`)
 console.log(`  repos: ${repoCount} (${ecoTagged} with eco tags, sorted by stars)`)
 console.log(`  crates: ${qualifiedCrates.length} (live counts, sorted by usage)`)

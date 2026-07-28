@@ -21,6 +21,7 @@
     "db:sync-schema": "prisma db push && node scripts/record-schema.mjs",
     "db:export": "tsx scripts/export-snapshot.ts",
     "db:backfill-batch": "tsx scripts/run-one-backfill-batch.ts",
+    "db:purge-broken-jobs": "tsx scripts/purge-broken-jobs.ts",
     "db:seed-sources": "node scripts/seed-sources.mjs",
     "db:studio": "prisma studio",
     "logos": "tsx scripts/fetch-logos.ts",

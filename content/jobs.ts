@@ -18,4 +18,9 @@ export type EditorialJob = {
   expiresAt:      string
 }
 
-export const JOBS = rawJobs as unknown as EditorialJob[]
+// Runtime guard: a failed extraction can publish a job row with no role/company
+// and a placeholder "job" slug. Those render as blank cards and previously broke
+// the search index, so drop them here — the single choke point every consumer uses.
+export const JOBS = (rawJobs as unknown as EditorialJob[]).filter(
+  j => Boolean(j?.slug) && j.slug !== "job" && Boolean(j?.role) && Boolean(j?.company)
+)

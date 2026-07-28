@@ -50,8 +50,10 @@ function search(q: string, index: SearchEntry[]): SearchEntry[] {
   const contains: SearchEntry[] = []
 
   for (const e of index) {
+    // Defensive: a single malformed index entry must never break sitewide search.
+    if (typeof e?.title !== "string" || typeof e?.href !== "string") continue
     const t = e.title.toLowerCase()
-    const s = e.sub.toLowerCase()
+    const s = (e.sub ?? "").toLowerCase()
     if (t === lq)                              { exact.push(e);   continue }
     if (t.startsWith(lq) || s.startsWith(lq)) { prefix.push(e);  continue }
     if (t.includes(lq)   || s.includes(lq))   { contains.push(e) }
@@ -77,7 +79,7 @@ function search(q: string, index: SearchEntry[]): SearchEntry[] {
     const cn = exactCompany.title.toLowerCase()
     const jobIdxs: number[] = []
     ranked.forEach((e, i) => {
-      if (e.type === "job" && e.sub.toLowerCase() === cn) jobIdxs.push(i)
+      if (e.type === "job" && (e.sub ?? "").toLowerCase() === cn) jobIdxs.push(i)
     })
     if (jobIdxs.length > 0) {
       const jobs = jobIdxs.map(i => ranked[i])
@@ -98,7 +100,7 @@ function search(q: string, index: SearchEntry[]): SearchEntry[] {
     if (prefixCos.length === 1) {
       const pc = prefixCos[0]
       const cn = pc.title.toLowerCase()
-      const toPromote = [pc, ...ranked.filter(e => e.type === "job" && e.sub.toLowerCase() === cn)]
+      const toPromote = [pc, ...ranked.filter(e => e.type === "job" && (e.sub ?? "").toLowerCase() === cn)]
       for (const item of toPromote) {
         const idx = ranked.indexOf(item)
         if (idx >= 0) ranked.splice(idx, 1)
