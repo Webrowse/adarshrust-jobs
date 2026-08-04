@@ -13,9 +13,9 @@ import { readPublished } from "./store"
  * output must be byte-stable for identical DB state, or the publish step would
  * create spurious commits. Determinism comes from two things:
  *   1. A stable row order - readPublished() orders by (createdAt, id).
- *   2. Canonical serialisation - object keys sorted recursively, fixed
- *      indentation, trailing newline. jsonb does not preserve key order, so we
- *      normalise it here.
+ *   2. Canonical serialisation - object keys sorted recursively, no indentation,
+ *      trailing newline. jsonb does not preserve key order, so we normalise it
+ *      here.
  *
  * This is the single export implementation. It is imported by the pipeline
  * (server action) and by scripts/export-snapshot.ts (CLI). It reads the DB
@@ -43,9 +43,22 @@ function canonicalize(value: unknown): unknown {
   return value
 }
 
-/** Canonical JSON bytes for a value: sorted keys, 2-space indent, trailing newline. */
+/**
+ * Canonical JSON bytes for a value: sorted keys, no indentation, trailing
+ * newline.
+ *
+ * Indentation was 2 spaces until it stopped being affordable: it accounted for
+ * 41.4% of the full oss corpus file (40.2 MB pretty vs 23.5 MB minified), which
+ * is uploaded on every publish and stored forever in Git history. These are
+ * machine-generated artifacts that every consumer reads with JSON.parse, so the
+ * whitespace bought readability in diffs nobody reads at that size. Use
+ * `git show <rev>:content/<type>.json | jq` when a snapshot needs eyeballing.
+ *
+ * Canonicality is unaffected - key order and array order still make the output
+ * a pure function of the data, which is what the no-op publish gate relies on.
+ */
 export function serialize(value: unknown): string {
-  return JSON.stringify(canonicalize(value), null, 2) + "\n"
+  return JSON.stringify(canonicalize(value)) + "\n"
 }
 
 /**

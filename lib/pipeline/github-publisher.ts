@@ -1,3 +1,4 @@
+import { createHash } from "crypto"
 import { Octokit } from "@octokit/rest"
 import { type SnapshotFile, snapshotSha256 } from "./snapshot"
 
@@ -6,11 +7,23 @@ import { type SnapshotFile, snapshotSha256 } from "./snapshot"
  * Data API (no clone, no working tree). PostgreSQL is the source of truth; this
  * writes the derived snapshot so Railway's normal GitHub deploy rebuilds.
  *
- * The no-op decision compares the generated snapshot against what is ACTUALLY
- * in the repo right now (fetched here), not a locally stored hash - so a failed
- * or uncertain previous push can never cause a wrong skip or a spurious empty
- * commit. Reading Git to decide whether to write does not make it a source of
- * truth: the published bytes always come from Postgres.
+ * Large files go up as blobs, never inline. Sending file contents inside the
+ * createTree call is what GitHub means by "your input was too large to process":
+ * the full oss corpus file alone is ~40 MB, which JSON-escapes to ~45 MB inside
+ * that request body, and on 2026-08-04 the endpoint began answering 422. Uploading
+ * each changed file with createBlob first and referencing the returned SHAs is
+ * the "build the tree incrementally" path GitHub's own error text recommends,
+ * and it keeps each request proportional to one file instead of the whole
+ * snapshot.
+ *
+ * The no-op decision still compares against what is ACTUALLY in the repo right
+ * now, not a locally stored hash - so a failed or uncertain previous push can
+ * never cause a wrong skip or a spurious empty commit. It just does it without
+ * transferring anything: a file's Git object id is a pure function of its bytes,
+ * so hashing locally and comparing against the blob SHAs already listed in the
+ * base tree is an exact content comparison. Reading Git to decide whether to
+ * write does not make it a source of truth: the published bytes always come
+ * from Postgres.
  *
  * Result is one of three explicit states so the caller can report precisely.
  */
@@ -36,20 +49,28 @@ function readConfig(): Config | { error: string } {
 }
 
 /**
- * Fetch the files currently committed on the branch at the given paths, in the
- * order given. Returns null if any file is absent (e.g. before the first
- * publish of this file set), which the caller treats as "changed". Uses the
- * git blob API so large files (oss.json) are handled, unlike the 1 MB-capped
- * contents API. Generic over the path set so any caller's file list - the
- * 8-file content snapshot, a single search index file, or any future artifact
- * - reuses this same atomic-commit-with-no-op-gate logic without duplicating it.
+ * Git's object id for a file: sha1("blob <byte-length>\0" + bytes). Identical to
+ * `git hash-object`, so the result can be compared directly against the blob
+ * SHAs GitHub returns in a tree listing - which is how the no-op gate decides
+ * "unchanged" without downloading a single byte of content.
  */
-async function fetchCurrentSnapshot(
+function gitBlobSha(content: string): string {
+  const bytes = Buffer.from(content, "utf-8")
+  return createHash("sha1").update(`blob ${bytes.length}\0`).update(bytes).digest("hex")
+}
+
+/**
+ * Map of path -> blob SHA for everything currently committed on the base tree.
+ * A path missing from the map (new file, or a tree large enough that GitHub
+ * truncated the listing) simply reads as "changed", which is the safe direction:
+ * the file gets re-uploaded and the tree-identity check in commitSnapshot still
+ * prevents an empty commit.
+ */
+async function readTreeBlobShas(
   octokit: Octokit,
   cfg: Config,
   baseTreeSha: string,
-  paths: string[],
-): Promise<SnapshotFile[] | null> {
+): Promise<Map<string, string>> {
   const tree = await octokit.git.getTree({
     owner: cfg.owner,
     repo: cfg.repo,
@@ -60,36 +81,48 @@ async function fetchCurrentSnapshot(
   for (const entry of tree.data.tree) {
     if (entry.path && entry.sha && entry.type === "blob") shaByPath.set(entry.path, entry.sha)
   }
-  const files: SnapshotFile[] = []
-  for (const path of paths) {
-    const sha = shaByPath.get(path)
-    if (!sha) return null
-    const blob = await octokit.git.getBlob({ owner: cfg.owner, repo: cfg.repo, file_sha: sha })
-    const content = Buffer.from(blob.data.content, blob.data.encoding as BufferEncoding).toString("utf-8")
-    files.push({ path, content })
-  }
-  return files
+  return shaByPath
 }
 
-/** Create the tree/commit and move the branch ref. Returns the new commit SHA. */
+/**
+ * Upload the changed files as blobs, build a tree on top of the base, and move
+ * the branch ref. Returns the new commit SHA, or null when the resulting tree is
+ * byte-identical to the base (nothing to commit).
+ *
+ * Blobs upload one at a time on purpose: the snapshot is tens of megabytes and
+ * this runs inside the web server, so holding one base64 body in memory at a
+ * time keeps the publish off the memory bill.
+ */
 async function commitSnapshot(
   octokit: Octokit,
   cfg: Config,
-  files: SnapshotFile[],
+  changed: SnapshotFile[],
   headSha: string,
   baseTreeSha: string,
-): Promise<string> {
+): Promise<string | null> {
+  const entries: { path: string; mode: "100644"; type: "blob"; sha: string }[] = []
+  for (const file of changed) {
+    const blob = await octokit.git.createBlob({
+      owner: cfg.owner,
+      repo: cfg.repo,
+      content: Buffer.from(file.content, "utf-8").toString("base64"),
+      encoding: "base64",
+    })
+    entries.push({ path: file.path, mode: "100644", type: "blob", sha: blob.data.sha })
+  }
+
   const tree = await octokit.git.createTree({
     owner: cfg.owner,
     repo: cfg.repo,
     base_tree: baseTreeSha,
-    tree: files.map((file) => ({
-      path: file.path,
-      mode: "100644" as const,
-      type: "blob" as const,
-      content: file.content,
-    })),
+    tree: entries,
   })
+  // Backstop for a truncated tree listing: if every "changed" file turned out to
+  // match what was already committed, the new tree is the base tree and there is
+  // nothing to publish. Creating a tree does not move the branch, so bailing here
+  // leaves Git untouched.
+  if (tree.data.sha === baseTreeSha) return null
+
   const commit = await octokit.git.createCommit({
     owner: cfg.owner,
     repo: cfg.repo,
@@ -113,7 +146,6 @@ async function commitSnapshot(
  */
 export async function publishSnapshot(files: SnapshotFile[]): Promise<PublishResult> {
   const contentSha256 = snapshotSha256(files)
-  const paths = files.map((f) => f.path)
   const cfg = readConfig()
   if ("error" in cfg) return { state: "failed", error: cfg.error }
 
@@ -127,13 +159,13 @@ export async function publishSnapshot(files: SnapshotFile[]): Promise<PublishRes
       const headCommit = await octokit.git.getCommit({ owner: cfg.owner, repo: cfg.repo, commit_sha: headSha })
       const baseTreeSha = headCommit.data.tree.sha
 
-      const current = await fetchCurrentSnapshot(octokit, cfg, baseTreeSha, paths)
-      if (current && snapshotSha256(current) === contentSha256) {
-        return { state: "skipped_no_changes" }
-      }
+      const shaByPath = await readTreeBlobShas(octokit, cfg, baseTreeSha)
+      const changed = files.filter((file) => shaByPath.get(file.path) !== gitBlobSha(file.content))
+      if (changed.length === 0) return { state: "skipped_no_changes" }
 
       try {
-        const commitSha = await commitSnapshot(octokit, cfg, files, headSha, baseTreeSha)
+        const commitSha = await commitSnapshot(octokit, cfg, changed, headSha, baseTreeSha)
+        if (!commitSha) return { state: "skipped_no_changes" }
         return { state: "committed", commitSha, contentSha256 }
       } catch (err) {
         // Retry once from a fresh head; otherwise fall through to failure.
