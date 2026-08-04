@@ -1,12 +1,1 @@
-{
-  "diesel-rs/diesel": [
-    "database",
-    "wasm"
-  ],
-  "esp-rs/esp-hal": [
-    "embedded"
-  ],
-  "tokio-rs/axum": [
-    "axum"
-  ]
-}
+{"diesel-rs/diesel":["database","wasm"],"esp-rs/esp-hal":["embedded"],"tokio-rs/axum":["axum"]}
