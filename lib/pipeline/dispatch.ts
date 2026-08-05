@@ -35,17 +35,31 @@ export const KIND_TO_COLLECTOR: Record<SourceKind, Collector> = {
 export type ScanJob = { source: SourceRow; collect: Collector }
 
 /**
- * The scan jobs for this run: enabled sources that are past their refresh
- * interval, paired with their collector. Sources whose kind has no collector
- * are skipped. Honouring intervals means a daily Refresh only scans sources
- * that are actually due, so cost tracks the refresh cadence, not dataset size.
+ * What this run will scan, plus the due sources it could not route.
+ *
+ * `unroutable` exists because a source's `kind` comes out of Postgres as a bare
+ * string and toRow() casts it to SourceKind unchecked, so a row can carry a kind
+ * that no collector implements. That happened silently: a "grants" source sat
+ * enabled and permanently due from 2026-07-02 onward, skipped on every run with
+ * nothing reported, while the admin listed it as healthy. Returning these
+ * instead of dropping them lets the caller surface the misconfiguration.
  */
-export async function dueScanJobs(now: Date = new Date()): Promise<ScanJob[]> {
+export type ScanPlan = { jobs: ScanJob[]; unroutable: SourceRow[] }
+
+/**
+ * The scan plan for this run: enabled sources past their refresh interval,
+ * each paired with its collector. Honouring intervals means a daily Refresh only
+ * scans sources that are actually due, so cost tracks the refresh cadence, not
+ * dataset size.
+ */
+export async function dueScanJobs(now: Date = new Date()): Promise<ScanPlan> {
   const due = await dueSources(now)
   const jobs: ScanJob[] = []
+  const unroutable: SourceRow[] = []
   for (const source of due) {
     const collect = KIND_TO_COLLECTOR[source.kind] as Collector | undefined
     if (collect) jobs.push({ source, collect })
+    else unroutable.push(source)
   }
-  return jobs
+  return { jobs, unroutable }
 }

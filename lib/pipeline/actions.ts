@@ -43,8 +43,17 @@ export async function runRefresh(): Promise<RefreshResult> {
 
   const runId = acq.run.id
   try {
-    const jobs = await dueScanJobs()
+    const { jobs, unroutable } = await dueScanJobs()
     const report = emptyReport()
+    // A due source with no collector would otherwise be dropped in silence and
+    // stay due forever while the admin shows it as enabled. Report it every run
+    // as a note rather than an error: the run itself did not fail.
+    for (const s of unroutable) {
+      report.notes.push(
+        `Source "${s.label}" (kind: ${s.kind}) has no collector and was skipped. ` +
+        `It stays due until a collector is registered in KIND_TO_COLLECTOR or the source is disabled.`,
+      )
+    }
     const { dirty } = await runPipelineOrchestrator(report, (r) => runPipeline(runId, jobs, r))
     await finishRun(runId, { status: "done", dirty, report })
   } catch (e) {
