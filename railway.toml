@@ -8,4 +8,10 @@ buildCommand = "npx prisma generate && npm run build"
 # set is well under 200 MB. With a 4 GB ceiling V8 has no reason to collect, so
 # RSS drifted to 0.82 GB — and Railway bills memory per minute. Capping only the
 # server process keeps the build's headroom while forcing normal GC in prod.
-startCommand = "NODE_OPTIONS=--max-old-space-size=512 npm start"
+# 256, not 512: measured on identical load (homepage + /oss + 300 repo pages),
+# 256MB cap settled at 303MB RSS vs 403MB at 512MB and 385MB at 4096MB. Most of
+# that difference is uncollected garbage, not retained data - V8 simply collects
+# sooner when given less room. Verified safe at 256: 8/8 requests to the 6MB /oss
+# page returned 200 with no OOM. Boot is identical either way (212MB RSS,
+# 69MB heap), so only the serving working set is being tuned here.
+startCommand = "NODE_OPTIONS=--max-old-space-size=256 npm start"
