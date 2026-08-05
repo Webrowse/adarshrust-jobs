@@ -5,6 +5,7 @@ import type { ContentType } from "@/lib/admin/types"
 import { BulkDeleteButton } from "@/components/admin/bulk-delete-button"
 import { AddPublishedButton } from "@/components/admin/add-published-button"
 import { PublishedSearch } from "@/components/admin/published-search"
+import { isAdmin } from "@/lib/admin/require-admin"
 
 const TABS: ContentType[] = CONTENT_TYPES
 
@@ -13,6 +14,7 @@ interface PageProps {
 }
 
 export default async function PublishedPage({ searchParams }: PageProps) {
+  if (!(await isAdmin())) return null
   const { type = "jobs" } = await searchParams
   const activeType = (TABS.includes(type as ContentType) ? type : "jobs") as ContentType
   const allItems = await readContent(activeType)

@@ -1,11 +1,13 @@
 import { getAdminRepos } from "@/lib/admin/curation"
 import { RepoControl } from "@/components/admin/repo-control"
+import { isAdmin } from "@/lib/admin/require-admin"
 
 interface PageProps {
   searchParams: Promise<{ activity?: string; state?: string; flag?: string; q?: string }>
 }
 
 export default async function ReposPage({ searchParams }: PageProps) {
+  if (!(await isAdmin())) return null
   const initial = await searchParams
   let repos = null
   try {

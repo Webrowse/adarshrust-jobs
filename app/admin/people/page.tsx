@@ -1,7 +1,9 @@
 import { readContent } from "@/lib/admin/storage"
 import { PeopleManager, type PersonRow } from "@/components/admin/people-manager"
+import { isAdmin } from "@/lib/admin/require-admin"
 
 export default async function PeoplePage() {
+  if (!(await isAdmin())) return null
   let people: PersonRow[] | null = null
   try {
     const items = await readContent("authors")

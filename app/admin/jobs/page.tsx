@@ -1,7 +1,9 @@
 import { getAdminJobs, getAdminCompanies } from "@/lib/admin/job-intel"
 import { JobIntelligence } from "@/components/admin/job-intelligence"
+import { isAdmin } from "@/lib/admin/require-admin"
 
 export default async function JobsPage() {
+  if (!(await isAdmin())) return null
   let jobs = null
   let companies = null
   try {

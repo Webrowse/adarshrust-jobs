@@ -1,12 +1,14 @@
 import Link from "next/link"
 import { getAdminRepos, buildQueues, QUEUE_META, QUEUE_IDS, type QueueId } from "@/lib/admin/curation"
 import { QueueList } from "@/components/admin/curation-queue"
+import { isAdmin } from "@/lib/admin/require-admin"
 
 interface PageProps {
   searchParams: Promise<{ tab?: string }>
 }
 
 export default async function QueuePage({ searchParams }: PageProps) {
+  if (!(await isAdmin())) return null
   const { tab } = await searchParams
   const activeTab: QueueId = QUEUE_IDS.includes(tab as QueueId) ? (tab as QueueId) : "needs-review"
 

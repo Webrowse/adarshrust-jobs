@@ -1,4 +1,5 @@
 import { listRuns, type RunRow } from "@/lib/admin/pipeline-runs"
+import { isAdmin } from "@/lib/admin/require-admin"
 
 function fmt(d: Date | null): string {
   if (!d) return "—"
@@ -53,6 +54,7 @@ function RunCard({ run }: { run: RunRow }) {
 }
 
 export default async function ReportsPage() {
+  if (!(await isAdmin())) return null
   let runs: RunRow[] = []
   let dbDown = false
   try {

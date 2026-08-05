@@ -1,8 +1,10 @@
 import { listOverrides, type OverrideRow } from "@/lib/admin/overrides"
 import { EcoOverridesManager } from "@/components/admin/eco-overrides-manager"
 import { LifecycleEdgesManager } from "@/components/admin/lifecycle-edges-manager"
+import { isAdmin } from "@/lib/admin/require-admin"
 
 export default async function OverridesPage() {
+  if (!(await isAdmin())) return null
   let ecoTags: OverrideRow[] = []
   let lifecycleEdges: OverrideRow[] = []
   let dbDown = false

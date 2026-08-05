@@ -1,7 +1,9 @@
 import { listSources, type SourceRow } from "@/lib/admin/sources"
 import { SourcesManager } from "@/components/admin/sources-manager"
+import { isAdmin } from "@/lib/admin/require-admin"
 
 export default async function SourcesPage() {
+  if (!(await isAdmin())) return null
   let sources: SourceRow[] = []
   let dbDown = false
   try {

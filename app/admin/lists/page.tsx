@@ -1,7 +1,9 @@
 import { listEntries, type ListEntryRow } from "@/lib/admin/lists"
 import { ListsManager } from "@/components/admin/lists-manager"
+import { isAdmin } from "@/lib/admin/require-admin"
 
 export default async function ListsPage() {
+  if (!(await isAdmin())) return null
   let entries: ListEntryRow[] = []
   let dbDown = false
   try {

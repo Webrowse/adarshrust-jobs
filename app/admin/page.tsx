@@ -5,6 +5,7 @@ import { getPublishMetadata, type PublishMetadata } from "@/lib/admin/publish-me
 import { getAdminRepos, computeCorpusHealth, computeQuality, buildQueues, QUEUE_META, QUEUE_IDS } from "@/lib/admin/curation"
 import { RefreshPanel } from "@/components/admin/refresh-panel"
 import { SchemaStatusPanel } from "@/components/admin/schema-status"
+import { isAdmin } from "@/lib/admin/require-admin"
 
 function fmt(d: Date | string | null | undefined): string {
   if (!d) return "never"
@@ -16,6 +17,7 @@ function pct(n: number | null): string {
 }
 
 export default async function AdminPage() {
+  if (!(await isAdmin())) return null
   let active: RunRow | null = null
   let latest: RunRow | null = null
   let publish: PublishMetadata | null = null

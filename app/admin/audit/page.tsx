@@ -1,4 +1,5 @@
 import { listAudit, listAuditActions } from "@/lib/admin/audit"
+import { isAdmin } from "@/lib/admin/require-admin"
 
 interface PageProps {
   searchParams: Promise<{ action?: string; target?: string }>
@@ -19,6 +20,7 @@ function summarizeChanges(changes: unknown): string {
 }
 
 export default async function AuditPage({ searchParams }: PageProps) {
+  if (!(await isAdmin())) return null
   const { action = "", target = "" } = await searchParams
   let entries = null
   let actions: string[] = []
