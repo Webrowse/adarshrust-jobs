@@ -73,4 +73,11 @@ next-env.d.ts
 # scripts/build-oss-list.mjs. Public routes read this, never the full corpus.
 /content/oss-list.json
 /content/oss-qualified-crates.json
+
+# co-occurrence index over content/oss.json - regenerated at build by
+# scripts/build-companion-index.mjs. Was tracked until 2026-08-10, which let it
+# freeze at a 2,100-repo snapshot while the corpus grew to 5,394: it gates which
+# crates get a /deps page, so 538 qualifying crates were 404ing. Derived data
+# belongs with the other build outputs, not in Git.
+/content/oss-companion-index.json
 design-reference/ghibli/
