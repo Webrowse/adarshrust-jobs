@@ -69,6 +69,11 @@ next-env.d.ts
 # search index - regenerated at build by scripts/build-search-index.mjs
 /public/search-index.json
 
+# the /oss browser's dataset - regenerated at build by scripts/build-oss-index.mjs.
+# Served as a static, edge-cacheable asset so the page stops embedding ~5,400
+# repos in its own HTML.
+/public/oss-index.json
+
 # slim public projection of content/oss.json - regenerated at build by
 # scripts/build-oss-list.mjs. Public routes read this, never the full corpus.
 /content/oss-list.json

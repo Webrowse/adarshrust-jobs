@@ -3,7 +3,7 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "prebuild": "node scripts/check-public-purity.mjs && node scripts/check-schema-sync.mjs && node scripts/build-companion-index.mjs && node scripts/build-search-index.mjs && node scripts/build-oss-list.mjs",
+    "prebuild": "node scripts/check-public-purity.mjs && node scripts/check-schema-sync.mjs && node scripts/build-companion-index.mjs && node scripts/build-search-index.mjs && node scripts/build-oss-list.mjs && node scripts/build-oss-index.mjs",
     "build": "next build",
     "dev": "next dev",
     "check:purity": "node scripts/check-public-purity.mjs",

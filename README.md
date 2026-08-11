@@ -90,10 +90,28 @@ content/oss-companion-index.json && npm run prebuild`) fails with ENOENT — a w
 tree will hide the mistake.
 
 **Generated files are not tracked.** `oss-companion-index.json`, `oss-list.json`,
-`oss-qualified-crates.json` and `public/search-index.json` are gitignored and rebuilt every
-deploy from the tracked `content/oss.json`. Tracking a derived file has bitten this repo
-before: the companion index was committed and never regenerated, froze at a ~2,100-repo
-corpus, and silently withheld 538 crate pages until 2026-08-10.
+`oss-qualified-crates.json`, `public/search-index.json` and `public/oss-index.json` are
+gitignored and rebuilt every deploy from the tracked `content/oss.json`. Tracking a derived
+file has bitten this repo before: the companion index was committed and never regenerated,
+froze at a ~2,100-repo corpus, and silently withheld 538 crate pages until 2026-08-10.
+
+### Why /oss loads its data separately
+
+`/oss` used to embed all ~5,400 repos in the page. Next serialises client props twice — once
+in the HTML, once in the RSC payload — so the page was a **6.04 MB response**, the heaviest
+thing the server could be asked for and the main driver of the memory bill. (Earlier
+"pagination" work capped *rendered cards* at 100 but still shipped the whole corpus.)
+
+The page now embeds only the top 100 by stars, server-rendered so crawlers still see real
+content, and `components/editorial/oss-browser-loader.tsx` fetches the rest from
+`public/oss-index.json` — a static file the browser and Cloudflare both cache. Measured at
+the 256 MB cap:
+
+    before:   5 requests to /oss  →  RSS 316 MB → 405 MB   (+89 MB)
+    after:   20 requests to /oss  →  RSS 268 MB → 272 MB    (+4 MB)
+
+Page response went 6.04 MB → 0.38 MB. Crawlers that don't run JavaScript never fetch the
+index at all.
 
 ### Which crates get a page
 
@@ -148,7 +166,7 @@ deploy logs; a bad token logs `[cache] purge rejected:` instead.
 
 `middleware.ts` returns 403 to SEO/backlink crawlers by User-Agent (Ahrefs, Semrush, MJ12,
 DotBot, SE Ranking and others). They send no referral traffic but sweep the whole corpus on
-a loop, and `/oss` is a ~6 MB response. `app/robots.ts` asks the same crawlers to stay away;
+a loop. `app/robots.ts` asks the same crawlers to stay away;
 the middleware enforces it, because robots.txt is advisory. Search engines and AI search
 crawlers are deliberately **not** blocked.
 
