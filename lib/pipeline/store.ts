@@ -30,17 +30,56 @@ export async function publishedHrefSet(type: ContentType): Promise<Set<string>> 
   return set
 }
 
-/** Insert accepted items for a type. DB only; JSON is a build artifact. */
+/** Set of slugs already published for a type (for dedup). */
+export async function publishedSlugSet(type: ContentType): Promise<Set<string>> {
+  const rows = await prisma.contentItem.findMany({ where: { type }, select: { data: true } })
+  const set = new Set<string>()
+  for (const r of rows) {
+    const slug = String((r.data as Record<string, unknown>)?.slug ?? "")
+    if (slug) set.add(slug)
+  }
+  return set
+}
+
+/**
+ * Insert accepted items for a type. DB only; JSON is a build artifact.
+ *
+ * Slug collisions are rejected here rather than at each call site, because this
+ * is the one choke point every scanner reaches. Callers already de-duplicate on
+ * `href`, but the public routes resolve on `slug` — so one entity reachable at
+ * two URLs (deno.com and deno.land, a marketing site and a GitHub org, a single
+ * job posting mirrored under two aggregator ids) passes the href check and lands
+ * as a second row sharing one slug. The result is a duplicate <loc> in
+ * sitemap.xml and a page lookup that silently resolves to whichever row sorts
+ * first. Seven such rows accumulated before this guard existed; see
+ * scripts/dedupe-by-slug.ts, which cleans up any that predate it.
+ *
+ * The first row to claim a slug keeps it. Items without a slug are unaffected -
+ * not every content type has one, and there is nothing to collide on.
+ */
 export async function publishBatch(type: ContentType, items: Record<string, unknown>[]): Promise<number> {
   if (items.length === 0) return 0
+
+  // Seeded from the database, then extended as the batch is walked, so a batch
+  // that contains the same slug twice inserts it once.
+  const claimed = await publishedSlugSet(type)
+  const accepted = items.filter((item) => {
+    const slug = String(item.slug ?? "")
+    if (!slug) return true
+    if (claimed.has(slug)) return false
+    claimed.add(slug)
+    return true
+  })
+  if (accepted.length === 0) return 0
+
   await prisma.contentItem.createMany({
-    data: items.map((item) => ({
+    data: accepted.map((item) => ({
       type,
       href: String(item.href ?? "") || null,
       data: item as never,
     })),
   })
-  return items.length
+  return accepted.length
 }
 
 /** Remove published items of a type whose expiresAt is before today. */
