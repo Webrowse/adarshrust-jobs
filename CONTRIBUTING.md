@@ -65,6 +65,13 @@ A company is included when:
 - Companies that used Rust experimentally but switched away
 - Companies that use Rust only in a non-strategic internal tool
 
+### Crate pages
+
+Crate pages under `/deps` are **derived, not curated**. A crate gets a page automatically
+once at least **25 repositories in the corpus depend on it**; below that it returns 404 by
+design. There is no manual override — the way to give a crate a page is to grow the corpus
+coverage that justifies it.
+
 ---
 
 ## Review intervals
@@ -77,6 +84,16 @@ Content is expected to be re-verified on a regular schedule:
 - Pulse / Companies: every 60 days
 
 Run `npx tsx scripts/validate-content.ts` to check for stale entries.
+
+**These intervals are aspirational for the repository corpus.** They were written when the
+corpus was small and hand-checked. Against 5,394 repos the validator currently reports
+~4,700 stale warnings, because the 30-day OSS review interval was never realistic at that
+scale — repo freshness is maintained by the weekly GitHub metadata refresh instead. Treat
+the intervals as binding for the hand-curated surfaces (jobs, grants, events, pulse,
+companies) and read the repo warnings as noise until the interval is rebased.
+
+The **errors** it reports are real and worth fixing — currently 7 duplicate entries
+(`Copods — Rust Engineer`, `Deno`, `Bun`, `Alacritty` ×2, `Union`, `Open Interpreter`).
 
 ---
 
