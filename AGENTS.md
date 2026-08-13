@@ -14,18 +14,34 @@ check:purity` fails the build otherwise. The full 24 MB `content/oss.json` is of
 public routes too — they use the slim `oss-list.json` projection.
 
 **Generated content files are gitignored on purpose.** `oss-companion-index.json`,
-`oss-list.json`, `oss-qualified-crates.json`, `public/search-index.json`. Never commit one.
-A tracked companion index froze at an old corpus and silently withheld 538 crate pages for
-two months; that is why the rule exists.
+`oss-list.json`, `oss-qualified-crates.json`, `public/search-index.json`,
+`public/oss-index.json`. Never commit one. A tracked companion index froze at an old
+corpus and silently withheld 538 crate pages for two months; that is why the rule exists.
 
-**`prebuild` order is load-bearing.** `build-companion-index.mjs` must run before both
-`build-search-index.mjs` and `build-oss-list.mjs`, which read its output. Verify changes
-with a clean-state run, not a warm tree:
+**`prebuild` order is load-bearing.** `build-companion-index.mjs` must run before
+`build-search-index.mjs`, `build-oss-list.mjs` and `build-oss-index.mjs`, which read its
+output. Verify changes with a clean-state run, not a warm tree:
 
 ```bash
-rm -f content/oss-companion-index.json content/oss-list.json content/oss-qualified-crates.json
+rm -f content/oss-companion-index.json content/oss-list.json \
+      content/oss-qualified-crates.json public/search-index.json public/oss-index.json
 npm run prebuild
 ```
+
+**`package-lock.json` is tracked and must be regenerated only from a clean slate**
+(`rm -rf node_modules package-lock.json && npm install`). A lockfile assembled through
+incremental install/uninstall steps on macOS shipped without `resolved`/`integrity`
+fields and broke the Linux deploy on @tailwindcss/oxide native bindings (2026-08-13).
+
+**Never materialise the full corpus in runtime server code.** Parsing all ~5,600 rows
+(from Postgres or `content/oss.json`) is a ~105 MB heap transient; at the 256 MB heap cap
+that is most of the headroom, and a 160 cap OOM-crashed /admin this way. Admin queries
+project fields out of the `data` jsonb in SQL (see `getAdminRepos`). The publish path is
+the one legitimate full materialisation, and the 256 cap exists to protect it.
+
+**Schema changes deploy-block until pushed.** `check-schema-sync` fails the production
+build on confirmed drift. Run `npm run db:sync-schema` before pushing any commit that
+touches `prisma/schema.prisma`.
 
 **`dynamicParams = false` means 404s are normal.** `/deps/[crate]`, `/oss/[owner]/[repo]`,
 `/ecosystem/[slug]` and `/topics/[topic]` only serve params generated at build time.
