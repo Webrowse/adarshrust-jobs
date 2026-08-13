@@ -6,8 +6,37 @@ This version has breaking changes — APIs, conventions, and file structure may 
 
 # OSSPath repo rules
 
-Read [README.md](README.md) for the architecture. The traps below are the ones that have
-actually cost time.
+## Architecture in one paragraph
+
+Postgres is the source of truth; the public site never reads it. An admin action
+(Refresh / Republish) exports the database as `content/*.json` and commits it to this
+repo; the push triggers a Railway build that prerenders every page; Cloudflare caches
+the result at the edge (honouring `s-maxage=31536000`). Public pages are all static —
+`dynamicParams = false` on the big routes. The pipeline is tiered
+(`lib/pipeline/orchestrator.ts`): Tier 1 scan/backfill → Tier 2 corpus intelligence →
+Tier 3 export/publish, with 2 and 3 running only when Tier 1 changed the corpus.
+
+## Deployment facts
+
+- Railway project `distinguished-compassion`: `OssPath` (web), `Postgres`, and two weekly
+  Tier-1-only crons (`osspath-backfill-batch`, `osspath-github-refresh`, each with its own
+  `railway.*.toml`).
+- Server heap capped at 256 MB old space (`railway.toml`); the build gets 4 GB. Railway
+  bills average RSS per minute, so the average is the cost.
+- The server exits cleanly at 04:30 UTC daily to reset memory drift
+  (`instrumentation-node.ts`); `restartPolicyType = "ALWAYS"` restarts it. It defers while
+  a pipeline run is active.
+- On boot, the Cloudflare zone is purged **once per build**, gated by the Next build id
+  recorded in the `edge_cache_marker` table — same-build restarts (including the nightly
+  one) skip the purge. Needs `CLOUDFLARE_ZONE_ID` + `CLOUDFLARE_PURGE_TOKEN`; no-ops
+  without them. Logs `[cache] purged…` or `[cache] skip purge…`.
+- `middleware.ts` 403s SEO/backlink crawlers by User-Agent. Search engines are not blocked.
+- A crate gets a `/deps/[crate]` page at ≥ 25 dependent repos (`DEP_PAGE_THRESHOLD`,
+  `lib/deps-data.ts`); the companion index only tracks crates in ≥ 6 repos.
+- CI (`.github/workflows/ci.yml`) runs `tsc`, `check:purity`, and the seven `check:*`
+  suites on every push. `check-schema-sync` is excluded (needs `DATABASE_URL`).
+
+## The traps that have actually cost time
 
 **Public routes must never touch the database.** They read `content/*.json`. `npm run
 check:purity` fails the build otherwise. The full 24 MB `content/oss.json` is off limits to
@@ -53,6 +82,6 @@ crate actually clears the 25-dependent threshold.
 run Tier 1 only and structurally cannot publish. A snapshot publish is a Git commit, and the
 site changes when the resulting build ships.
 
-**Memory is the hosting cost.** Railway bills average RSS per minute. Before adding anything
-that inflates a response or holds state on the server, check `README.md` § Deployment — the
-server heap is capped at 256 MB old space for this reason.
+**Memory is the hosting cost.** Railway bills average RSS per minute. Before adding
+anything that inflates a response or holds state on the server, reread the memory bullets
+under Deployment facts above — the 256 MB heap cap exists for this reason.
