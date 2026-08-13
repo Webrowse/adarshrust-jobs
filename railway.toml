@@ -14,9 +14,9 @@ buildCommand = "npx prisma generate && npm run build"
 # sooner when given less room. Verified safe at 256: 8/8 requests to the 6MB /oss
 # page returned 200 with no OOM. Boot is identical either way (212MB RSS,
 # 69MB heap), so only the serving working set is being tuned here.
-# Lowered 256 → 160 on 2026-08-13: the 6 MB /oss response that justified the
-# extra headroom is gone (0.38 MB since the static-index fix). The biggest
-# remaining runtime allocation is an admin publish (~60–80 MB transient for the
-# snapshot + base64 blob bodies), which fits. Verify after deploying: run one
-# full Refresh + Republish from /admin and confirm it completes without OOM.
-startCommand = "NODE_OPTIONS=--max-old-space-size=160 npm start"
+# 256 is the floor, learned the hard way: a 160 cap OOM-crashed the server
+# (502 on /admin, 2026-08-13) because every authenticated admin view parses the
+# full ~24 MB content/oss.json via getPublishedCounts(), a far bigger transient
+# than any public route. Do not lower this again unless the admin storage layer
+# stops parsing the whole corpus for a sidebar count.
+startCommand = "NODE_OPTIONS=--max-old-space-size=256 npm start"
