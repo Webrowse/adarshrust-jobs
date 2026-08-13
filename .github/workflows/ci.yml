@@ -1,0 +1,30 @@
+name: checks
+
+# The seven check:* suites, purity, and typecheck — everything that runs without
+# a database. check:schema-sync is deliberately absent (needs DATABASE_URL).
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  checks:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - run: npx prisma generate
+      - run: npx tsc --noEmit
+      - run: npm run check:purity
+      - run: npm run check:corpus
+      - run: npm run check:snapshot
+      - run: npm run check:orchestrator
+      - run: npm run check:ecosystem
+      - run: npm run check:search
+      - run: npm run check:graph
+      - run: npm run check:cargo
