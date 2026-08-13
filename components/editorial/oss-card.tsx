@@ -89,7 +89,15 @@ export function OSSCard({
       aria-label={`View ${repo.name}`}
     >
       <div className="e-oss__head">
-        <span className="e-oss__name">{repo.name}</span>
+        {/* A real anchor, not just the card's router.push: this is the only
+            crawlable path from /oss to the 5,000+ repo detail pages. */}
+        {detailHref ? (
+          <Link href={detailHref} className="e-oss__name" onClick={e => e.stopPropagation()}>
+            {repo.name}
+          </Link>
+        ) : (
+          <span className="e-oss__name">{repo.name}</span>
+        )}
         <span className="e-oss__stars">★ {fmt(stars)}</span>
         <span className={`e-oss__activity e-oss__activity--${tier}`}>{tier}</span>
       </div>

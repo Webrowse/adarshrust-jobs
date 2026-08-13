@@ -9,11 +9,11 @@ import { getOwnerCompanyIndex } from "@/lib/company-data"
 
 export const metadata: Metadata = {
   title: "Repos — Rust Ecosystem",
-  description: "2,000+ curated Rust repositories filtered by stars, activity, license, and topic. Find realistic open-source contribution paths with maintainer context.",
+  description: "5,000+ curated Rust repositories filtered by stars, activity, license, and topic. Find realistic open-source contribution paths with maintainer context.",
   alternates: { canonical: "/oss" },
   openGraph: {
     title: "Repos — Rust Ecosystem",
-    description: "2,000+ curated Rust repositories. Filter by stars, activity, license, and topic to find your next contribution.",
+    description: "5,000+ curated Rust repositories. Filter by stars, activity, license, and topic to find your next contribution.",
     url: "/oss",
     type: "website",
     images: [{ url: "/opengraph-image", width: 1200, height: 630 }],
@@ -21,7 +21,7 @@ export const metadata: Metadata = {
   twitter: {
     card: "summary_large_image",
     title: "Repos — Rust Ecosystem",
-    description: "2,000+ curated Rust repositories filtered by stars, activity, and topic.",
+    description: "5,000+ curated Rust repositories filtered by stars, activity, and topic.",
     images: ["/opengraph-image"],
   },
 }

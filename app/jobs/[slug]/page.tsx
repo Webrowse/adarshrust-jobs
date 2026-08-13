@@ -90,8 +90,34 @@ export default async function JobDetailPage({ params }: PageProps) {
     ...(job.ecosystems ?? []).map(e => ECO_DISPLAY_NAME[e]),
   ]
 
+  // JobPosting structured data: jobs are the one content type where rich
+  // results (Google Jobs) drive real traffic. Fields map from curated data;
+  // optional ones are omitted rather than invented.
+  const jobLd = {
+    "@context": "https://schema.org",
+    "@type": "JobPosting",
+    title: job.role,
+    description: job.note,
+    datePosted: job.checkedAt,
+    ...(job.expiresAt ? { validThrough: job.expiresAt } : {}),
+    ...(isRemote ? { jobLocationType: "TELECOMMUTE" } : {}),
+    ...(job.tags.some(t => t.toLowerCase().startsWith("full")) ? { employmentType: "FULL_TIME" } : {}),
+    hiringOrganization: {
+      "@type": "Organization",
+      name: job.company,
+      ...(company?.href ? { sameAs: company.href } : {}),
+    },
+    directApply: true,
+    url: `https://osspath.com/jobs/${job.slug}`,
+  }
+
   return (
     <EditorialLayout>
+      <script
+        type="application/ld+json"
+        // "<" escaped so curated text can never close the script tag early.
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(jobLd).replace(/</g, "\\u003c") }}
+      />
       <section style={{ paddingTop: "clamp(40px, 6vw, 64px)", paddingBottom: "clamp(64px, 9vw, 104px)" }}>
         <div className="e-col">
 
