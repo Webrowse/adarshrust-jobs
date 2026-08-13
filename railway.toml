@@ -2,6 +2,11 @@
 buildCommand = "npx prisma generate && npm run build"
 
 [deploy]
+# ALWAYS (not the default ON_FAILURE) because instrumentation-node.ts exits
+# cleanly at 04:30 UTC every night to reset memory; Railway must bring the
+# container straight back. The same-build restart skips the edge-cache purge.
+restartPolicyType = "ALWAYS"
+
 # The NODE_OPTIONS service variable sets --max-old-space-size=4096, which the
 # build genuinely needs (it prerenders ~5,100 repo pages from a 40 MB corpus).
 # The running server does not: it starts at ~60 MB heap and its steady working
@@ -15,8 +20,10 @@ buildCommand = "npx prisma generate && npm run build"
 # page returned 200 with no OOM. Boot is identical either way (212MB RSS,
 # 69MB heap), so only the serving working set is being tuned here.
 # 256 is the floor, learned the hard way: a 160 cap OOM-crashed the server
-# (502 on /admin, 2026-08-13) because every authenticated admin view parses the
-# full ~24 MB content/oss.json via getPublishedCounts(), a far bigger transient
-# than any public route. Do not lower this again unless the admin storage layer
-# stops parsing the whole corpus for a sidebar count.
+# (502 on /admin, 2026-08-13). Materialising the full corpus from Postgres is a
+# ~105 MB heap transient on top of the ~65 MB baseline. The admin dashboard no
+# longer does that (getAdminRepos projects fields in SQL), but Refresh/Republish
+# must still build the whole snapshot in memory to export it, so the publish
+# path is what this headroom protects. Do not lower again without streaming the
+# export.
 startCommand = "NODE_OPTIONS=--max-old-space-size=256 npm start"

@@ -1,6 +1,7 @@
 import { readFile } from "fs/promises"
 import { join } from "path"
 import { prisma } from "@/lib/prisma"
+import { getActiveRun } from "@/lib/admin/pipeline-runs"
 
 // Node-runtime boot work. Only ever loaded via instrumentation.ts's
 // NEXT_RUNTIME === "nodejs" gate — never import this from route code.
@@ -16,6 +17,52 @@ export async function onServerBoot() {
   )
 
   void purgeEdgeCache()
+  scheduleNightlyRestart()
+}
+
+// ── Nightly memory reset ──────────────────────────────────────────────────────
+// RSS drifts from ~0.21 GB at boot toward the heap ceiling over a couple of
+// days and never comes back down; Railway bills the per-minute average, so a
+// daily reset is worth roughly a dollar a month. A clean process.exit(0) plus
+// railway.toml's restartPolicyType = "ALWAYS" is the whole mechanism: no cron
+// service, no API token. Safe because the edge-purge gate above recognises a
+// same-build restart and leaves the Cloudflare cache alone, and because the
+// restart defers while a pipeline run is in flight.
+
+const RESTART_UTC_HOUR = 4
+const RESTART_UTC_MINUTE = 30
+
+function scheduleNightlyRestart() {
+  // Only inside a Railway container. Local dev and CI never self-restart.
+  if (!process.env.RAILWAY_ENVIRONMENT) return
+
+  const now = new Date()
+  const next = new Date(Date.UTC(
+    now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate(),
+    RESTART_UTC_HOUR, RESTART_UTC_MINUTE, 0,
+  ))
+  if (next <= now) next.setUTCDate(next.getUTCDate() + 1)
+
+  const delay = next.getTime() - now.getTime()
+  console.log(`[restart] nightly reset scheduled for ${next.toISOString()}`)
+  setTimeout(() => void attemptRestart(), delay).unref()
+}
+
+async function attemptRestart() {
+  try {
+    // Never kill an in-flight Refresh/Republish; try again in 30 minutes.
+    const active = await getActiveRun()
+    if (active) {
+      console.log("[restart] pipeline run in progress, deferring 30min")
+      setTimeout(() => void attemptRestart(), 30 * 60 * 1000).unref()
+      return
+    }
+  } catch {
+    // DB unreachable: nothing can be mid-run that matters more than the reset.
+  }
+  const m = process.memoryUsage()
+  console.log(`[restart] nightly memory reset, rss=${(m.rss / 1048576).toFixed(1)}MB — exiting for a clean restart`)
+  process.exit(0)
 }
 
 /**
