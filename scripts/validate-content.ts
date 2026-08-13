@@ -110,15 +110,32 @@ if (errors === 0 && warnings === 0) console.log("  All jobs OK")
 
 console.log("\nOSS Paths:")
 const ossKeys = new Set<string>()
+// The corpus is thousands of machine-refreshed repos: one stale line per repo
+// drowned every real error (4,600+ warnings at one point), so staleness is
+// reported as a single distribution summary instead.
+let ossStale = 0
+let ossOldest = 0
 for (const repo of OSS_PATHS) {
   const ctx = repo.name
   if (!repo.name) err(ctx, "Missing name")
   checkUrl(ctx, repo.href)
   checkDate(ctx, "checkedAt", repo.checkedAt)
-  checkStale(ctx, "oss", repo.checkedAt)
+  if (repo.checkedAt) {
+    const days = Math.floor((Date.now() - new Date(repo.checkedAt).getTime()) / 86400000)
+    if (days > REVIEW_INTERVALS.oss) {
+      ossStale++
+      if (days > ossOldest) ossOldest = days
+    }
+  }
   const ossKey = repo.href || repo.name
   if (ossKeys.has(ossKey)) err(ctx, "Duplicate entry")
   ossKeys.add(ossKey)
+}
+if (ossStale > 0) {
+  warn(
+    "oss corpus",
+    `${ossStale} of ${OSS_PATHS.length} repos past the ${REVIEW_INTERVALS.oss}d review interval (oldest ${ossOldest}d)`,
+  )
 }
 if (errors === 0 && warnings === 0) console.log("  All OSS paths OK")
 

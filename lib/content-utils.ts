@@ -11,7 +11,10 @@
 export const REVIEW_INTERVALS = {
   jobs:      7,   // days
   grants:    14,
-  oss:       30,
+  // The OSS corpus is machine-refreshed (weekly GitHub-refresh cron batches),
+  // not hand-reviewed: 30 days was written for a ~50-repo curated list and at
+  // 5,000+ repos flagged nearly the whole corpus. 120d marks genuine neglect.
+  oss:       120,
   events:    14,
   pulse:     60,
   companies: 60,
