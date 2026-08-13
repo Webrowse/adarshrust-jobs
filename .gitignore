@@ -2,7 +2,6 @@
 
 # dependencies
 /node_modules
-/package-lock.json
 /.pnp
 .pnp.*
 .yarn/*
@@ -57,6 +56,10 @@ next-env.d.ts
 /[A-Z]*_*.md
 /[A-Z]*_*.json
 /posthog-setup-report.md
+
+# same docs, parked out of the repo root. The rules above are root-anchored, so
+# moving a file into a subdirectory would otherwise make it visible to Git again.
+/ignored-MDs/
 
 # generated cache
 /data/oss-deps-cache.json
