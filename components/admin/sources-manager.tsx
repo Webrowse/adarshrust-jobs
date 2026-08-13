@@ -9,6 +9,7 @@ import { CONTENT_TYPES } from "@/lib/admin/content-schema"
 const KINDS: SourceKind[] = [
   "hn", "twir", "github-oss", "github-pulse", "github-orgs",
   "events", "portals", "rust-bytes", "careers", "reddit",
+  "remoteok", "weworkremotely", "rustler-in",
 ]
 const TYPES: ContentType[] = CONTENT_TYPES
 
@@ -17,9 +18,10 @@ function fmtLast(d: Date | null): string {
   return `${new Date(d).toISOString().slice(0, 16).replace("T", " ")}Z`
 }
 
-export function SourcesManager({ sources }: { sources: SourceRow[] }) {
+export function SourcesManager({ sources, routableKinds }: { sources: SourceRow[]; routableKinds: string[] }) {
   const [pending, start] = useTransition()
   const [showAdd, setShowAdd] = useState(false)
+  const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null)
   const [form, setForm] = useState({ label: "", kind: "github-oss" as SourceKind, type: "oss" as ContentType, url: "", intervalHours: 24 })
 
   function toggle(s: SourceRow) {
@@ -30,6 +32,8 @@ export function SourcesManager({ sources }: { sources: SourceRow[] }) {
     start(() => setSourceInterval(s.id, v))
   }
   function del(s: SourceRow) {
+    if (confirmDeleteId !== s.id) { setConfirmDeleteId(s.id); return }
+    setConfirmDeleteId(null)
     start(() => removeSource(s.id))
   }
   function submit() {
@@ -73,13 +77,28 @@ export function SourcesManager({ sources }: { sources: SourceRow[] }) {
             <div className="adm-src__main">
               <span className="adm-src__label">{s.label}</span>
               <span className="adm-src__meta">{s.kind} · {s.type} · last {fmtLast(s.lastRunAt)}</span>
+              {/* A kind with no collector is skipped by every run while staying
+                  permanently due — the "grants" source sat like this for weeks. */}
+              {!routableKinds.includes(s.kind) && (
+                <span className="adm-db-warn" style={{ marginLeft: 0 }}>
+                  no collector for kind &quot;{s.kind}&quot; — this source never runs
+                </span>
+              )}
             </div>
             <label className="adm-src__interval">
               every
               <input className="adm-input adm-input--num" type="number" min={1} defaultValue={s.intervalHours} onBlur={(e) => changeInterval(s, parseInt(e.target.value))} disabled={pending} />
               h
             </label>
-            <button className="adm-btn adm-btn--ghost" onClick={() => del(s)} disabled={pending} title="Delete">✕</button>
+            <button
+              className="adm-btn adm-btn--ghost"
+              onClick={() => del(s)}
+              onBlur={() => setConfirmDeleteId(null)}
+              disabled={pending}
+              title={confirmDeleteId === s.id ? "Click again to delete" : "Delete"}
+            >
+              {confirmDeleteId === s.id ? "Delete?" : "✕"}
+            </button>
           </div>
         ))}
       </div>

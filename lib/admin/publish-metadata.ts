@@ -29,6 +29,27 @@ export async function getPublishMetadata(): Promise<PublishMetadata | null> {
   }
 }
 
+/**
+ * Whether Postgres holds writes newer than the last published snapshot — the
+ * "I changed something but never clicked Republish" drift that has shipped
+ * before. Checks both write surfaces: content_items (pipeline) and overrides
+ * (human curation). Coarse on purpose: any newer write flags it, even one a
+ * publish would no-op on; a false "ahead" costs one no-op Republish.
+ */
+export async function hasUnpublishedWrites(): Promise<boolean | null> {
+  const meta = await getPublishMetadata()
+  if (!meta?.lastPublishedAt) return null
+  const [item, override] = await Promise.all([
+    prisma.contentItem.aggregate({ _max: { updatedAt: true } }),
+    prisma.override.aggregate({ _max: { updatedAt: true } }),
+  ])
+  const newest = Math.max(
+    item._max.updatedAt?.getTime() ?? 0,
+    override._max.updatedAt?.getTime() ?? 0,
+  )
+  return newest > meta.lastPublishedAt.getTime()
+}
+
 /** Record a successful publish. Upserts the singleton; stamps lastPublishedAt now. */
 export async function recordPublish(input: { commitSha: string; contentSha256: string }): Promise<void> {
   const now = new Date()

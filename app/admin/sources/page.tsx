@@ -1,4 +1,5 @@
 import { listSources, type SourceRow } from "@/lib/admin/sources"
+import { KIND_TO_COLLECTOR } from "@/lib/pipeline/dispatch"
 import { SourcesManager } from "@/components/admin/sources-manager"
 import { isAdmin } from "@/lib/admin/require-admin"
 
@@ -22,7 +23,7 @@ export default async function SourcesPage() {
         {dbDown ? (
           <div className="adm-db-warn" style={{ marginLeft: 0 }}>DB unreachable — sources unavailable</div>
         ) : (
-          <SourcesManager sources={sources} />
+          <SourcesManager sources={sources} routableKinds={Object.keys(KIND_TO_COLLECTOR)} />
         )}
       </div>
     </>
