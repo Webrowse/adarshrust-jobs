@@ -39,16 +39,25 @@ const violations = []
 
 // ── INV-1: DB/auth stays out of the public render path ────────────────────────
 
-const DB_AUTH_ALLOWED_PREFIXES = [join("app", "admin"), join("app", "api", "auth")]
+const DB_AUTH_ALLOWED_PREFIXES = [
+  join("app", "admin"),
+  join("app", "api", "auth"),
+  // Admin-only client components legitimately import @/lib/admin server actions.
+  join("components", "admin"),
+]
 const DB_AUTH_FORBIDDEN = /from\s+["']@\/lib\/(prisma|auth|admin(?:\/[^"']+)?)["']/
 
-for (const file of walk(join(ROOT, "app"))) {
-  const rel = relative(ROOT, file)
-  if (DB_AUTH_ALLOWED_PREFIXES.some((p) => rel.startsWith(p))) continue
+// components/ is walked too: a public page importing a component that imports
+// the DB would otherwise slip past a guard that only looks at app/.
+for (const dir of ["app", "components"]) {
+  for (const file of walk(join(ROOT, dir))) {
+    const rel = relative(ROOT, file)
+    if (DB_AUTH_ALLOWED_PREFIXES.some((p) => rel.startsWith(p))) continue
 
-  const src = readFileSync(file, "utf-8")
-  const m = src.match(DB_AUTH_FORBIDDEN)
-  if (m) violations.push(`${rel}: imports ${m[0].replace(/from\s+/, "")} (DB/auth must stay under app/admin or app/api/auth)`)
+    const src = readFileSync(file, "utf-8")
+    const m = src.match(DB_AUTH_FORBIDDEN)
+    if (m) violations.push(`${rel}: imports ${m[0].replace(/from\s+/, "")} (DB/auth must stay under app/admin, app/api/auth, or components/admin)`)
+  }
 }
 
 // ── INV-2: the full OSS corpus stays out of every route but the detail page ──

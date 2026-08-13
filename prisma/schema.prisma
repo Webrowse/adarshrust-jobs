@@ -158,6 +158,20 @@ model PublishMetadata {
   @@map("publish_metadata")
 }
 
+// ── Edge cache marker ─────────────────────────────────────────────────────────
+// Single row recording the Next build id that last purged the Cloudflare edge
+// cache. Lets instrumentation.ts skip the purge when the same build boots again
+// (a container restart), while every new build still purges — including
+// docs-only deploys, which must purge because each build embeds new
+// /_next/static asset URLs in every page's HTML.
+
+model EdgeCacheMarker {
+  id        String   @id @default("singleton")
+  buildId   String
+  updatedAt DateTime @updatedAt
+  @@map("edge_cache_marker")
+}
+
 // ── Tier 2: Knowledge Graph snapshot ──────────────────────────────────────────
 // Single row holding the current corpus-wide knowledge graph (typed nodes +
 // typed edges), derived entirely from Tier 1 and Tier 2 data already stored on
