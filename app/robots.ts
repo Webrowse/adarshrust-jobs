@@ -13,8 +13,9 @@ export default function robots(): MetadataRoute.Robots {
         disallow: ["/dashboard", "/api/", "/admin/", "/demo/"],
       },
       // Pure SEO-analysis crawlers, no search/AI referral value, high crawl volume.
-      // middleware.ts enforces this list with a 403 — robots.txt is only advisory,
-      // and these sweeps are the main driver of the Railway memory bill.
+      // robots.txt is only advisory; the "Block SEO backlink crawlers" WAF custom
+      // rule on the osspath.com zone enforces this list with a 403, and exempts
+      // /robots.txt so a crawler can still read why.
       { userAgent: "AhrefsBot", disallow: "/" },
       { userAgent: "SemrushBot", disallow: "/" },
       { userAgent: "MJ12bot", disallow: "/" },

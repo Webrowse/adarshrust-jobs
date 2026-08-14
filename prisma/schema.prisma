@@ -159,11 +159,12 @@ model PublishMetadata {
 }
 
 // ── Edge cache marker ─────────────────────────────────────────────────────────
-// Single row recording the Next build id that last purged the Cloudflare edge
-// cache. Lets instrumentation.ts skip the purge when the same build boots again
-// (a container restart), while every new build still purges — including
-// docs-only deploys, which must purge because each build embeds new
-// /_next/static asset URLs in every page's HTML.
+// DEAD as of the Cloudflare Pages migration (2026-08-15) and kept only so the
+// model matches the live table. It recorded the Next build id that last purged
+// the Cloudflare edge cache, so a same-build container restart on Railway would
+// not purge. Pages deploys are atomic and there is no long-lived origin, so
+// nothing writes this row any more. Safe to drop the model and the table
+// together in one `npm run db:sync-schema`.
 
 model EdgeCacheMarker {
   id        String   @id @default("singleton")
