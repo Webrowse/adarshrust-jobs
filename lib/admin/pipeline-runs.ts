@@ -70,8 +70,16 @@ export type AcquireResult =
 /**
  * Try to start a run. Returns the active run instead if one is already in
  * progress. Stale runs (dead heartbeat) are marked failed and taken over.
+ *
+ * This is normally the first query a scheduled job makes, and Neon scales its
+ * compute to zero, so the connection is usually cold. That cold start ate the
+ * whole of Prisma's 2s transaction-acquire window and failed the backfill cron
+ * outright ("Unable to start a transaction in the given time", 2026-08-15).
+ * Two guards: wake the connection outside the transaction, and give the
+ * acquire a window that a slow wake cannot exhaust.
  */
 export async function acquireRun(): Promise<AcquireResult> {
+  await prisma.$queryRaw`SELECT 1`
   return prisma.$transaction(async (tx) => {
     // Serialise concurrent acquisitions; auto-released at transaction end.
     await tx.$executeRaw`SELECT pg_advisory_xact_lock(${LOCK_KEY})`
@@ -90,7 +98,7 @@ export async function acquireRun(): Promise<AcquireResult> {
 
     const run = await tx.pipelineRun.create({ data: { status: "running" } })
     return { acquired: true, run: toRow(run) } as AcquireResult
-  })
+  }, { maxWait: 20_000, timeout: 30_000 })
 }
 
 /** Keep the lock alive; call between phases. */
