@@ -1,4 +1,19 @@
-# https://developers.cloudflare.com/workers/static-assets/headers
-# https://opennext.js.org/cloudflare/caching#static-assets-caching
+# Cloudflare Pages headers.
+# https://developers.cloudflare.com/pages/configuration/headers/
+#
+# The /* block mirrors the headers() block in next.config.ts, which is inert
+# under `output: export` — change both or neither.
+/*
+  Strict-Transport-Security: max-age=31536000
+  X-Content-Type-Options: nosniff
+  Referrer-Policy: strict-origin-when-cross-origin
+  X-Frame-Options: DENY
+
+# Build-hashed filenames, so they can never go stale.
 /_next/static/*
   Cache-Control: public,max-age=31536000,immutable
+
+# The exported OG card lands as an extensionless file, which Pages would
+# otherwise serve as octet-stream — and no scraper renders a preview from that.
+/opengraph-image
+  Content-Type: image/png

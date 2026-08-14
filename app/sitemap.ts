@@ -3,6 +3,10 @@ import { getQualifiedCrates } from "@/lib/deps-data"
 import { getCareerPathSlugs } from "@/lib/career-paths"
 import { getQualifiedTopics } from "@/lib/topics-data"
 import { getOSSRepos } from "@/lib/oss-data"
+
+// See app/robots.ts: metadata routes must opt in to being prerendered before
+// `output: export` will build them.
+export const dynamic = "force-static"
 import { JOBS } from "@/content/jobs"
 import { GRANTS } from "@/content/grants"
 import { FUNDERS } from "@/content/funders"

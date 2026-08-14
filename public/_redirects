@@ -1,0 +1,8 @@
+# Cloudflare Pages redirects. Mirrors the redirects() block in next.config.ts,
+# which is inert under `output: export` — change both or neither.
+/companies/* / 301
+/dashboard/* / 301
+/workflow / 301
+/sources / 301
+/demo / 301
+/opportunities /jobs 301

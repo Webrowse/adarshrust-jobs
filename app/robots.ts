@@ -1,5 +1,9 @@
 import { MetadataRoute } from "next"
 
+// Metadata routes are treated as dynamic route handlers unless told otherwise,
+// which `output: export` refuses to build. Nothing here reads the request.
+export const dynamic = "force-static"
+
 export default function robots(): MetadataRoute.Robots {
   return {
     rules: [

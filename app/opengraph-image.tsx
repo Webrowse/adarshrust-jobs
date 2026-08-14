@@ -3,6 +3,11 @@ import { ImageResponse } from "next/og"
 export const size = { width: 1200, height: 630 }
 export const contentType = "image/png"
 
+// See app/robots.ts: metadata routes must opt in to being prerendered before
+// `output: export` will build them. The image is a fixed card, so it renders
+// once at build time and ships as a file.
+export const dynamic = "force-static"
+
 export default function OgImage() {
   return new ImageResponse(
     <div

@@ -5,6 +5,7 @@
   "scripts": {
     "prebuild": "node scripts/check-public-purity.mjs && node scripts/check-schema-sync.mjs && node scripts/build-companion-index.mjs && node scripts/build-search-index.mjs && node scripts/build-oss-list.mjs && node scripts/build-oss-index.mjs",
     "build": "next build",
+    "build:export": "STATIC_EXPORT=1 npm run build",
     "dev": "next dev",
     "check:purity": "node scripts/check-public-purity.mjs",
     "check:snapshot": "tsx scripts/check-snapshot-determinism.ts",

@@ -1,27 +1,7 @@
 {
-	"$schema": "node_modules/wrangler/config-schema.json",
-	"main": ".open-next/worker.js",
-	"name": "jobs-adarshrust",
-	"compatibility_date": "2026-05-25",
-	"compatibility_flags": [
-		"nodejs_compat",
-		"global_fetch_strictly_public"
-	],
-	"assets": {
-		"directory": ".open-next/assets",
-		"binding": "ASSETS"
-	},
-	"services": [
-		{
-			// Self-reference service binding, the service name must match the worker name
-			// see https://opennext.js.org/cloudflare/caching
-			"binding": "WORKER_SELF_REFERENCE",
-			"service": "jobs-adarshrust"
-		}
-	],
-	"images": {
-		// Enable image optimization
-		// see https://opennext.js.org/cloudflare/howtos/image
-		"binding": "IMAGES"
-	}
+	// Cloudflare Pages project that serves osspath.com. `out/` is what
+	// `STATIC_EXPORT=1 npm run build` produces — plain files, no Worker.
+	// Deployed by .github/workflows/deploy.yml on every push to main.
+	"name": "osspath",
+	"pages_build_output_dir": "out"
 }
