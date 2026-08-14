@@ -113,6 +113,10 @@ publish is a Git commit, and the site changes when `deploy.yml` finishes. The we
 automatic path. `backfill-batch` hardcodes `dirty: false` and never publishes, so whatever
 enrichment it writes sits in Postgres until the next publish carries it out.
 
+Because publishes land on `main` from outside your checkout, `git push` will be rejected
+whenever one happened while you were working. Rebase onto it (`git pull --rebase origin
+main`); a publish only ever touches `content/*.json`, so it will not conflict with code.
+
 **Pages caches by deployment, so nothing needs purging.** Deploys are atomic and HTML is
 served `max-age=0, must-revalidate` with an ETag; `/_next/static/*` is immutable via
 `public/_headers`. The old zone cache rules that pinned HTML at the edge for a year existed
