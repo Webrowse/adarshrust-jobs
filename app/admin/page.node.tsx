@@ -8,6 +8,7 @@ import { getAdminRepos, computeCorpusHealth, computeQuality, buildQueues, QUEUE_
 import { RefreshPanel } from "@/components/admin/refresh-panel"
 import { SchemaStatusPanel } from "@/components/admin/schema-status"
 import { isAdmin } from "@/lib/admin/require-admin"
+import { isCommitDeployed } from "@/lib/admin/deploy-status"
 
 function fmt(d: Date | string | null | undefined): string {
   if (!d) return "never"
@@ -74,19 +75,11 @@ export default async function AdminPage() {
   const recentErrors = recentRuns.reduce((n, r) => n + (r.report?.errors?.length ?? 0), 0)
 
   // Answers the question Republish leaves open: has the publish actually
-  // deployed yet? Exact match on the built commit means yes. Otherwise compare
-  // against when this server came up: a publish stamped after this process
-  // started cannot be in this build, so it is still deploying (or the deploy
-  // failed). A publish older than the running server is live — a later
-  // code-only deploy carries the same content files, so SHA inequality alone
-  // must not read as "not deployed".
-  const liveSha = process.env.RAILWAY_GIT_COMMIT_SHA ?? null
-  const serverStartedAt = Date.now() - process.uptime() * 1000
-  const publishDeployed = !publish?.lastPublishedAt
-    ? null
-    : liveSha === publish.lastCommitSha
-      ? true
-      : new Date(publish.lastPublishedAt).getTime() < serverStartedAt
+  // deployed yet? Asks GitHub whether the deploy workflow for that exact commit
+  // finished successfully, because this process runs on your machine and can
+  // observe nothing about production otherwise. Null when it cannot be
+  // determined, which the label below renders as no claim at all.
+  const publishDeployed = await isCommitDeployed(publish?.lastCommitSha)
 
   return (
     <>
