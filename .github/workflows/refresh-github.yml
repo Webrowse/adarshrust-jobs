@@ -1,0 +1,43 @@
+name: refresh-github
+
+# Weekly Tier 1 pass over the corpus: re-reads stars, forks and open-issue
+# counts from the GitHub API into Postgres. When something actually changed,
+# the orchestrator runs Tier 2 and Tier 3 and publishes a content snapshot as a
+# commit on main — which fires deploy.yml and puts the new numbers on the live
+# site. When GitHub reports nothing new it commits nothing and no deploy runs.
+#
+# The publish goes through the GitHub Git Data API using GH_PUBLISH_TOKEN, a
+# PAT. That matters: pushes made with the workflow's built-in GITHUB_TOKEN do
+# not trigger other workflows, so a snapshot pushed that way would sit on main
+# without ever being deployed.
+on:
+  schedule:
+    - cron: "0 6 * * 0"
+  workflow_dispatch:
+
+concurrency:
+  group: pipeline
+  cancel-in-progress: false
+
+jobs:
+  refresh:
+    runs-on: ubuntu-latest
+    timeout-minutes: 120
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - run: npx prisma generate
+
+      - name: Refresh GitHub metadata and publish if changed
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+          # Secret names cannot start with GITHUB_, hence the indirection.
+          GITHUB_TOKEN: ${{ secrets.GH_API_TOKEN }}
+          GITHUB_PUBLISH_TOKEN: ${{ secrets.GH_PUBLISH_TOKEN }}
+          PUBLISH_REPO: ${{ github.repository }}
+          PUBLISH_BRANCH: main
+        run: npm run db:refresh-github
