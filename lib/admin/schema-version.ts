@@ -26,9 +26,8 @@ export function computeSchemaFingerprint(): string {
   return createHash("sha256").update(normalizeSchema(raw)).digest("hex")
 }
 
-/** The running app's git commit: Railway injects it; fall back to local git. */
+/** The checkout's git commit. The admin only ever runs locally, so this is it. */
 export function currentGitCommit(): string | null {
-  if (process.env.RAILWAY_GIT_COMMIT_SHA) return process.env.RAILWAY_GIT_COMMIT_SHA
   try {
     return execSync("git rev-parse HEAD", { stdio: ["ignore", "pipe", "ignore"] }).toString().trim()
   } catch {

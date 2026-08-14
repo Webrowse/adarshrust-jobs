@@ -20,8 +20,10 @@ import { GH_HEADERS } from "./scan/github"
  *
  * Memory: the candidate query returns ids only, and rows are loaded in small
  * chunks - deliberately unlike runBackfillBatch, which pulls all ~5,400 rows
- * with their full JSON into memory (twice) to pick 25. Railway bills memory by
- * the minute, so a batch job holding the whole corpus is a direct cost.
+ * with their full JSON into memory (twice) to pick 25. Originally this mattered
+ * because Railway billed average memory by the minute; on a CI runner the heap
+ * is free, but streaming ids still keeps the job's cost proportional to the
+ * batch rather than to the corpus, which is what makes it safe to grow.
  */
 
 /** Refresh a repo once its metadata is older than this. */

@@ -25,14 +25,15 @@ function normalizeSchema(text) {
 const raw = readFileSync(join(process.cwd(), "prisma", "schema.prisma"), "utf8")
 const fingerprint = createHash("sha256").update(normalizeSchema(raw)).digest("hex")
 
-let gitCommit = process.env.RAILWAY_GIT_COMMIT_SHA ?? null
+// GITHUB_SHA when this runs inside Actions, otherwise the local checkout.
+let gitCommit = process.env.GITHUB_SHA ?? null
 if (!gitCommit) {
   try { gitCommit = execSync("git rev-parse HEAD", { stdio: ["ignore", "pipe", "ignore"] }).toString().trim() } catch { gitCommit = null }
 }
 
 const { PrismaClient } = await import("@prisma/client")
 const { PrismaPg } = await import("@prisma/adapter-pg")
-const connectionString = process.env.DATABASE_PUBLIC_URL || process.env.DATABASE_URL
+const connectionString = process.env.DATABASE_URL
 const prisma = new PrismaClient({ adapter: new PrismaPg({ connectionString }) })
 
 await prisma.schemaMetadata.upsert({

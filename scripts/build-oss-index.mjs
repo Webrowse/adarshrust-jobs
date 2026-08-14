@@ -5,7 +5,7 @@
  * ~5,400 repos in the page itself, which Next serialises twice (once in the
  * server-rendered HTML, once in the RSC payload). That made /oss a ~6 MB
  * response and the single heaviest thing the server could be asked for — and
- * Railway bills memory per minute, so every crawler sweep of that page moved
+ * Railway billed memory per minute, so every crawler sweep of that page moved
  * the invoice. The DOM-level pagination added earlier capped rendered cards at
  * 100 but shipped the whole corpus regardless.
  *

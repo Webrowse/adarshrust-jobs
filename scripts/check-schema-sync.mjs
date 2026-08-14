@@ -15,7 +15,8 @@
  */
 import { spawnSync } from "child_process"
 
-const isProduction = Boolean(process.env.RAILWAY_ENVIRONMENT || process.env.CI)
+// CI is set by GitHub Actions, which is where the production build runs.
+const isProduction = Boolean(process.env.CI)
 
 const res = spawnSync(
   "npx",

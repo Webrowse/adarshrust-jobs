@@ -22,7 +22,7 @@ function PublishBanner({ publish }: { publish?: PublishReport }) {
   if (publish.state === "committed") {
     return (
       <div className="adm-log" style={{ color: "var(--e-ok, #2a7d4f)" }}>
-        Published: Git commit {publish.commitSha?.slice(0, 7)} created. Railway will deploy it.
+        Published: Git commit {publish.commitSha?.slice(0, 7)} created. GitHub Actions will build and deploy it.
       </div>
     )
   }

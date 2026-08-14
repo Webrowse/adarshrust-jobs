@@ -5,7 +5,7 @@ import { type SnapshotFile, snapshotSha256 } from "./snapshot"
 /**
  * Publish a content snapshot to Git as one atomic commit via the GitHub Git
  * Data API (no clone, no working tree). PostgreSQL is the source of truth; this
- * writes the derived snapshot so Railway's normal GitHub deploy rebuilds.
+ * writes the derived snapshot so the deploy workflow rebuilds and ships it.
  *
  * Large files go up as blobs, never inline. Sending file contents inside the
  * createTree call is what GitHub means by "your input was too large to process":

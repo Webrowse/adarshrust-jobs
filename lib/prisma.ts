@@ -7,7 +7,7 @@ function createPrismaClient() {
     connectionString,
     connectionTimeoutMillis: 6_000,  // fail fast when DB is unreachable
     idleTimeoutMillis: 30_000,       // release idle connections after 30s
-    max: 5,                          // Railway free tier connection limit
+    max: 5,                          // only the local admin holds a pool
   })
   return new PrismaClient({ adapter })
 }
