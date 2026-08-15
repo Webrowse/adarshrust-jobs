@@ -1,6 +1,7 @@
 import { prisma } from "@/lib/prisma"
 import type { CorpusProcessor } from "./index"
 import { inferEcosystem, type EcosystemResult } from "./ecosystem-rules"
+import { bulkUpdateData } from "./bulk-write"
 
 /**
  * Tier 2 processor: Ecosystem Intelligence.
@@ -45,7 +46,7 @@ export const ecosystemProcessor: CorpusProcessor = {
   async run() {
     const rows = await prisma.contentItem.findMany({ where: { type: "oss" } })
     const computedAt = new Date().toISOString()
-    let updated = 0
+    const pending: { id: string; data: Record<string, unknown> }[] = []
     let notYetEnriched = 0
 
     for (const row of rows) {
@@ -65,12 +66,9 @@ export const ecosystemProcessor: CorpusProcessor = {
       const next: EcosystemIntelligence = { version: ECOSYSTEM_VERSION, computedAt, ...result }
       if (sameEcosystem(data.ecosystemIntelligence, next)) continue
 
-      await prisma.contentItem.update({
-        where: { id: row.id },
-        data: { data: { ...data, ecosystemIntelligence: next } as never },
-      })
-      updated++
+      pending.push({ id: row.id, data: { ...data, ecosystemIntelligence: next } })
     }
+    const updated = await bulkUpdateData(pending)
 
     return { notes: [`${updated} / ${rows.length} repo(s) updated (${notYetEnriched} not yet Tier 1-enriched, skipped)`] }
   },

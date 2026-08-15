@@ -2,6 +2,7 @@ import { prisma } from "@/lib/prisma"
 import type { CorpusProcessor } from "./index"
 import { computeSimilarity, type SimilarEntry } from "./similarity"
 import { buildCompanionIndex, companionsForRepo, type Companion } from "./companions"
+import { bulkUpdateData } from "./bulk-write"
 
 /**
  * Tier 2 processor: repository relationships and ecosystem knowledge.
@@ -59,7 +60,7 @@ export const relationshipsProcessor: CorpusProcessor = {
     const companionIndex = buildCompanionIndex(parsed.map((r) => ({ slug: r.slug, dependencies: r.dependencies })))
 
     const computedAt = new Date().toISOString()
-    let updated = 0
+    const pending: { id: string; data: Record<string, unknown> }[] = []
     for (const row of parsed) {
       const next: Relationships = {
         version: RELATIONSHIPS_VERSION,
@@ -68,12 +69,9 @@ export const relationshipsProcessor: CorpusProcessor = {
         companions: companionsForRepo(row.dependencies, companionIndex),
       }
       if (sameRelationships(row.data.relationships, next)) continue
-      await prisma.contentItem.update({
-        where: { id: row.id },
-        data: { data: { ...row.data, relationships: next } as never },
-      })
-      updated++
+      pending.push({ id: row.id, data: { ...row.data, relationships: next } })
     }
+    const updated = await bulkUpdateData(pending)
 
     return { notes: [`${updated} / ${parsed.length} repo(s) updated (similarity + companion crates)`] }
   },
